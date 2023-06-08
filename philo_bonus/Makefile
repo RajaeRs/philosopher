@@ -6,9 +6,9 @@ HEADER = philo_bonus.h
 
 OBJ = $(SRC:.c=.o)
 
-CC = gcc
+CC = cc
 
-FLAGE = -Wall -Wextra -Werror
+FLAGE = -Wall -Wextra -Werror -pthread -fsanitize=thread -g
 # -fsanitize=thread -g
 all : $(NAME)
 

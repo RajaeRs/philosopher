@@ -74,9 +74,7 @@ int	main(int ac, char **av)
 	t_data		*data;
 	t_param		*param;
 	int			i;
-	int			e;
 
-	e = 0;
 	i = 1;
 	if (ac < 5 || ac > 6)
 		return (print_help());

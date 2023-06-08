@@ -87,8 +87,13 @@ void	*controling(void *d)
 		}
 		if (data->param->must_eat != -1)
 		{
+			sem_wait(data->param->gard_n_eat);
 			if (data->n_eat  >= data->param->must_eat + 1)
+			{
+				sem_post(data->param->gard_n_eat);
 				exit (0);
+			}
+			sem_post(data->param->gard_n_eat);
 		}
 		sem_post(data->param->gard_alive);
 	}
@@ -115,7 +120,11 @@ void	start(t_data *data)
 		sem_post(data->param->gard_alive);
 		my_usleep(data->param->eat_time, data);
 		if (s == 0)
+		{
+			sem_wait(data->param->gard_n_eat);
 			data->n_eat++;
+			sem_post(data->param->gard_n_eat);
+		}
 		sem_post(data->param->sem);
 		sem_post(data->param->sem);
 		print_status("is sleeping", data, &s);
@@ -130,7 +139,7 @@ int	main(int ac, char **av)
 	t_param	*param;
 	t_data	*data;
 	int		i;
-	int		alive;
+	// int		alive;
 
 	i = 1;
 	if (ac < 5 || ac > 6)
@@ -142,7 +151,7 @@ int	main(int ac, char **av)
 		i++;
 	}
 	i = 0;
-	alive = 0;
+	// alive = 0;
 	param = get_philo_param(ac, av);
 	if (param == NULL)
 	{

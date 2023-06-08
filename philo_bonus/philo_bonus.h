@@ -19,7 +19,9 @@
 # include <stdio.h>
 # include <unistd.h>
 # include <sys/time.h>
+# include <sys/wait.h>
 # include <signal.h>
+# include <fcntl.h>
 
 typedef struct s_param
 {
