@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 12:25:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/08 15:01:15 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/09 17:18:48 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,13 +85,14 @@ void	*controling(void *d)
 			printf("%d %d died\n", died, data->id);
 			exit (0);
 		}
-		if (data->param->must_eat != -1)
+		if (data->param->must_eat != -1 && data->stop == 0)
 		{
 			sem_wait(data->param->gard_n_eat);
-			if (data->n_eat  >= data->param->must_eat + 1)
+			if (data->n_eat  >= data->param->must_eat)
 			{
 				sem_post(data->param->gard_n_eat);
-				exit (0);
+				sem_post(data->param->gard_must);
+				data->stop = 1;
 			}
 			sem_post(data->param->gard_n_eat);
 		}
@@ -114,8 +115,7 @@ void	start(t_data *data)
 		sem_wait(data->param->sem);
 		print_status("has taken a fork", data, &s);
 		print_status("is eating", data, &s);
-		if (sem_wait(data->param->gard_alive) == -1)
-			printf("error sem_wait\n");
+		sem_wait(data->param->gard_alive);
 		data->alive_time = get_current_time();
 		sem_post(data->param->gard_alive);
 		my_usleep(data->param->eat_time, data);
@@ -134,12 +134,32 @@ void	start(t_data *data)
 }
 
 
+void	*waiting(void *d)
+{
+	t_data	*data;
+	int		i;
+
+	// usleep (150);
+	data = (t_data *)d;
+	i = 0;
+	my_usleep(data->param->eat_time, data);
+	while (i < data->param->n_philo)
+	{
+		sem_wait(data->param->gard_must);
+		i++;
+	}
+	usleep (50);
+	kill(data[0].philo, SIGINT);
+	return (NULL);
+}
+
+
 int	main(int ac, char **av)
 {
 	t_param	*param;
 	t_data	*data;
+	pthread_t	wait_eat;
 	int		i;
-	// int		alive;
 
 	i = 1;
 	if (ac < 5 || ac > 6)
@@ -151,14 +171,14 @@ int	main(int ac, char **av)
 		i++;
 	}
 	i = 0;
-	// alive = 0;
 	param = get_philo_param(ac, av);
 	if (param == NULL)
 	{
-		printf("sem_open failed\n");
+		write(2, "sem_open failed\n", 16);
 		return (1);
 	}
 	data = ft_calloc(sizeof(t_data), param->n_philo);
+	data->param = param;
 	while (i < param->n_philo)
 	{
 		data[i].id = i + 1;
@@ -168,13 +188,17 @@ int	main(int ac, char **av)
 			data[i].param = param;
 			data[i].n_eat = 0;
 			data[i].alive_time = get_current_time();
+			data[i].stop = 0;
+			if (param->must_eat != -1)
+				sem_wait(data[i].param->gard_must);
 			start(&data[i]);
 			exit (0);
 		}
-		// usleep(50);
 		i++;
 	}
 	i = 0;
+	if (param->must_eat != -1)
+		pthread_create(&wait_eat, NULL, waiting, data);
 	waitpid(-1, NULL, 0);
 	while (i < param->n_philo)
 	{

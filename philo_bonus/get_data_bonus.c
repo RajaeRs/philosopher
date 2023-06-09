@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:58:03 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/07 16:30:08 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/09 15:43:38 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,16 @@ t_param	*get_philo_param(int ac, char **av)
 	{
 		free (param);
 		return (NULL);
+	}
+	if (ac == 6)
+	{
+		param->gard_must = sem_open("/must_eat", O_CREAT | O_EXCL, 0644, param->n_philo);
+		sem_unlink("/must_eat");
+		if (param->gard_must == SEM_FAILED)
+		{
+			free (param);
+			return (NULL);
+		}
 	}
 	param->end_of_simulation = 0;
 	return (param);

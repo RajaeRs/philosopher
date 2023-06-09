@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:40:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/06 17:05:53 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/09 15:49:53 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ typedef struct s_param
 	sem_t			*gard_end;
 	sem_t			*gard_n_eat;
 	sem_t			*gard_alive;
+	sem_t			*gard_must;
 	sem_t			*sem;
 	
 }			t_param;
@@ -44,7 +45,7 @@ typedef	struct s_data
 	int			id;
 	int			alive_time;
 	int			n_eat;
-	int			philo_must_eat;
+	int			stop;
 	pid_t		philo;
 	t_param		*param;
 	pthread_t	control;
