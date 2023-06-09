@@ -51,11 +51,14 @@ void	print_status(char *message, t_data *d, int *s)
 {
 	int	time;
 
+	sem_wait(d->param->gard_end);
 	if (d->param->end_of_simulation != 0)
 	{
+		sem_post(d->param->gard_end);
 		*s = -1;
 		return ;
 	}
+	sem_post(d->param->gard_end);
 	time = get_current_time() - d->param->st_time;
 	sem_wait(d->param->gard_end);
 	printf("%d %d %s\n", time, d->id, message);
