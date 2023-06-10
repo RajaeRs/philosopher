@@ -80,6 +80,8 @@ void	*controling(void *d)
 		{
 			sem_post(data->param->gard_alive);
 			sem_wait(data->param->gard_end);
+			// if (data->param->must_eat != -1 && data->stop == 0)
+			// 	sem_post(data->param->gard_must);
 			data->param->end_of_simulation = -1;
 			printf("%d %d died\n", died, data->id);
 			exit (1);
@@ -201,10 +203,15 @@ int	mmain(int ac, char **av)
 	waitpid(-1, NULL, 0);
 	while (i < param->n_philo)
 	{
-		sem_post(param->gard_must);
+		if (param->must_eat != -1)
+			sem_post(param->gard_must);
 		kill(data[i].philo, SIGINT);
 		i++;
 	}
+	// if (param->must_eat != -1)
+	// {
+	// 	pthread_join(wait_eat, NULL);
+	// }
 	sem_close(param->gard_alive);
 	sem_close(param->gard_n_eat);
 	sem_close(param->sem);
