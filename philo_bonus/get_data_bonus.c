@@ -6,26 +6,14 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:58:03 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/09 15:43:38 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/10 22:09:28 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
 
-t_param	*get_philo_param(int ac, char **av)
+int	create_semaphor(t_param *param, int ac)
 {
-	t_param	*param;
-
-	param = ft_calloc(sizeof(t_param), 1);
-	param->st_time = get_current_time();
-	param->n_philo = ft_atoi(av[1]);
-	param->die_time = ft_atoi(av[2]);
-	param->eat_time = ft_atoi(av[3]);
-	param->sleep_time = ft_atoi(av[4]);
-	if (ac == 6)
-		param->must_eat = ft_atoi(av[5]);
-	else
-		param->must_eat = -1;
 	param->gard_end = sem_open("/end", O_CREAT | O_EXCL, 0644, 1);
 	sem_unlink("/end");
 	param->gard_alive = sem_open("/alive", O_CREAT | O_EXCL, 0644, 1);
@@ -38,7 +26,7 @@ t_param	*get_philo_param(int ac, char **av)
 		|| param->gard_alive == SEM_FAILED || param->gard_n_eat == SEM_FAILED)
 	{
 		free (param);
-		return (NULL);
+		return (1);
 	}
 	if (ac == 6)
 	{
@@ -47,10 +35,29 @@ t_param	*get_philo_param(int ac, char **av)
 		if (param->gard_must == SEM_FAILED)
 		{
 			free (param);
-			return (NULL);
+			return (1);
 		}
 	}
+	return (0);
+}
+
+t_param	*get_philo_param(int ac, char **av)
+{
+	t_param	*param;
+
+	param = ft_calloc(sizeof(t_param), 1);
+	param->st_time = get_current_time();
+	param->n_philo = ft_atoi(av[1]);
+	param->die_time = ft_atoi(av[2]);
+	param->eat_time = ft_atoi(av[3]);
+	param->sleep_time = ft_atoi(av[4]);
 	param->end_of_simulation = 0;
+	if (ac == 6)
+		param->must_eat = ft_atoi(av[5]);
+	else
+		param->must_eat = -1;
+	if (create_semaphor(param, ac) != 0)
+		return (NULL);
 	return (param);
 }
 

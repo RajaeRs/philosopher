@@ -8,7 +8,7 @@ OBJ = $(SRC:.c=.o)
 
 CC = cc
 
-FLAGE = -Wall -Wextra -Werror -pthread -fsanitize=thread -g
+FLAGE = -Wall -Wextra -Werror -pthread
 # -fsanitize=thread -g
 all : $(NAME)
 
@@ -26,4 +26,4 @@ fclean : clean
 
 re : fclean $(NAME)
 
-# .PHONY: all clean fclean re
+.PHONY: all clean fclean re
