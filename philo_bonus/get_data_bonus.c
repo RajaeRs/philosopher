@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:58:03 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/10 22:09:28 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/11 01:42:13 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,9 @@ int	create_semaphor(t_param *param, int ac)
 	{
 		param->gard_must = sem_open("/must_eat", O_CREAT | O_EXCL, 0644, param->n_philo);
 		sem_unlink("/must_eat");
-		if (param->gard_must == SEM_FAILED)
+		param->gard_sleep = sem_open("/sleep", O_CREAT | O_EXCL, 0644, 1);
+		sem_unlink("/sleep");
+		if (param->gard_must == SEM_FAILED || param->gard_sleep == SEM_FAILED)
 		{
 			free (param);
 			return (1);
@@ -52,6 +54,7 @@ t_param	*get_philo_param(int ac, char **av)
 	param->eat_time = ft_atoi(av[3]);
 	param->sleep_time = ft_atoi(av[4]);
 	param->end_of_simulation = 0;
+	param->stop_sleeping = 0;
 	if (ac == 6)
 		param->must_eat = ft_atoi(av[5]);
 	else

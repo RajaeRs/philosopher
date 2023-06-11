@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:40:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/09 15:49:53 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/11 01:41:43 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,9 @@ typedef struct s_param
 	int				must_eat;
 	int				st_time;
 	int				end_of_simulation;
+	int				stop_sleeping;
 	sem_t			*gard_end;
+	sem_t			*gard_sleep;
 	sem_t			*gard_n_eat;
 	sem_t			*gard_alive;
 	sem_t			*gard_must;

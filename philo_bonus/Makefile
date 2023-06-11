@@ -8,8 +8,8 @@ OBJ = $(SRC:.c=.o)
 
 CC = cc
 
-FLAGE = -Wall -Wextra -Werror -pthread -fsanitize=thread -g
-# -fsanitize=thread -g
+FLAGE = -Wall -Wextra -Werror -pthread 
+
 all : $(NAME)
 
 %.o: %.c 

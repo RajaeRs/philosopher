@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 12:25:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/10 22:06:33 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/11 23:58:35 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,28 @@ void	my_usleep(int time_to_sleep, t_data *data)
 	return ;
 }
 
+void	my_usleep_2(int time_to_sleep, t_data *data)
+{
+	int	start_time;
+
+	(void)data;
+	start_time = get_current_time();
+	while (1)
+	{
+		if (time_to_sleep <= (get_current_time() - start_time))
+			break ;
+		sem_wait(data->param->gard_sleep);
+		if (data->param->stop_sleeping != 0)
+		{
+			sem_post(data->param->gard_sleep);
+			break ;
+		}
+		sem_post(data->param->gard_sleep);
+		usleep(80);
+	}
+	return ;
+}
+
 void	print_status(char *message, t_data *d, int *s)
 {
 	int	time;
@@ -80,8 +102,6 @@ void	*controling(void *d)
 		{
 			sem_post(data->param->gard_alive);
 			sem_wait(data->param->gard_end);
-			// if (data->param->must_eat != -1 && data->stop == 0)
-			// 	sem_post(data->param->gard_must);
 			data->param->end_of_simulation = -1;
 			printf("%d %d died\n", died, data->id);
 			exit (1);
@@ -142,7 +162,7 @@ void	*waiting(void *d)
 
 	data = (t_data *)d;
 	i = 0;
-	my_usleep(data->param->eat_time, data);
+	my_usleep_2(data->param->eat_time, data);
 	while (i < data->param->n_philo)
 	{
 		sem_wait(data->param->gard_must);
@@ -198,9 +218,16 @@ int	mmain(int ac, char **av)
 	if (param->must_eat != -1)
 	{
 		pthread_create(&wait_eat, NULL, waiting, data);
-		pthread_detach(wait_eat);
+		// pthread_detach(wait_eat); // remouved -----------------
 	}
 	waitpid(-1, NULL, 0);
+	
+	sem_wait(data->param->gard_sleep);
+	param->stop_sleeping = -1;
+	sem_post(data->param->gard_sleep);
+	usleep(50);
+
+	
 	while (i < param->n_philo)
 	{
 		if (param->must_eat != -1)
@@ -208,10 +235,8 @@ int	mmain(int ac, char **av)
 		kill(data[i].philo, SIGINT);
 		i++;
 	}
-	// if (param->must_eat != -1)
-	// {
-	// 	pthread_join(wait_eat, NULL);
-	// }
+	if (param->must_eat != -1)
+		pthread_join(wait_eat, NULL); // add ---------
 	sem_close(param->gard_alive);
 	sem_close(param->gard_n_eat);
 	sem_close(param->sem);
