@@ -8,7 +8,7 @@ OBJ = $(SRC:.c=.o)
 
 CC = cc
 
-FLAGE = -Wall -Wextra -Werror -pthread 
+FLAGE = -Wall -Wextra -Werror -pthread #-fsanitize=address
 
 all : $(NAME)
 

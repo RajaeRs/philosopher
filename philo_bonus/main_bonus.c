@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 12:25:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/12 02:36:34 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/12 18:31:41 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,14 +41,15 @@ void	start_simulation(t_data *data, t_param *param)
 		data[i].n_eat = 0;
 		data[i].alive_time = get_current_time();
 		data[i].stop = 0;
-		if (param->must_eat != -1)
-			sem_wait(data[i].param->gard_must);
 		data[i].philo = fork();
 		if (data[i].philo == 0)
 		{
+			if (param->must_eat != -1)
+				sem_wait(data[i].param->gard_must);
 			start(&data[i]);
 		}
-		i++;
+		else
+			i++;
 	}
 	return ;
 }
