@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:40:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/11 01:41:43 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/12 02:24:57 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,9 @@ typedef struct s_param
 	sem_t			*gard_alive;
 	sem_t			*gard_must;
 	sem_t			*sem;
-	
 }			t_param;
 
-typedef	struct s_data
+typedef struct s_data
 {
 	int			id;
 	int			alive_time;
@@ -57,8 +56,10 @@ int			ft_atoi(const char *str);
 void		*ft_calloc(size_t count, size_t size);
 int			get_current_time(void);
 void		my_usleep(int time_to_sleep, t_data *data);
+void		my_usleep_2(int time_to_sleep, t_data *data);
 int			print_help(void);
-int			check_error(char *data);
+int			check_valide_data(char *data);
 t_param		*get_philo_param(int ac, char **av);
+void		start(t_data *data);
 
 #endif

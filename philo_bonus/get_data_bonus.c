@@ -6,11 +6,26 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:58:03 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/11 01:42:13 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/12 02:22:47 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
+
+int	must_eat_sem(t_param *param)
+{
+	param->gard_must = sem_open("/must_eat", O_CREAT | O_EXCL, \
+			0644, param->n_philo);
+	sem_unlink("/must_eat");
+	param->gard_sleep = sem_open("/sleep", O_CREAT | O_EXCL, 0644, 1);
+	sem_unlink("/sleep");
+	if (param->gard_must == SEM_FAILED || param->gard_sleep == SEM_FAILED)
+	{
+		free (param);
+		return (1);
+	}
+	return (0);
+}
 
 int	create_semaphor(t_param *param, int ac)
 {
@@ -29,17 +44,7 @@ int	create_semaphor(t_param *param, int ac)
 		return (1);
 	}
 	if (ac == 6)
-	{
-		param->gard_must = sem_open("/must_eat", O_CREAT | O_EXCL, 0644, param->n_philo);
-		sem_unlink("/must_eat");
-		param->gard_sleep = sem_open("/sleep", O_CREAT | O_EXCL, 0644, 1);
-		sem_unlink("/sleep");
-		if (param->gard_must == SEM_FAILED || param->gard_sleep == SEM_FAILED)
-		{
-			free (param);
-			return (1);
-		}
-	}
+		return (must_eat_sem(param));
 	return (0);
 }
 
@@ -64,7 +69,7 @@ t_param	*get_philo_param(int ac, char **av)
 	return (param);
 }
 
-int	check_error(char *data)
+int	check_valide_data(char *data)
 {
 	int		i;
 	long	result;

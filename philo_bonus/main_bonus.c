@@ -6,154 +6,11 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 12:25:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/11 23:58:35 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/12 02:36:34 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
-
-int	get_current_time(void)
-{
-	struct timeval	tv;
-	struct timezone	tz;
-	int				time;
-
-	time = 0;
-	if (gettimeofday(&tv, &tz) != 0)
-		return (-1);
-	time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	return (time);
-}
-
-void	my_usleep(int time_to_sleep, t_data *data)
-{
-	int	start_time;
-
-	(void)data;
-	start_time = get_current_time();
-	while (1)
-	{
-		if (time_to_sleep <= (get_current_time() - start_time))
-			break ;
-		sem_wait(data->param->gard_end);
-		if (data->param->end_of_simulation != 0)
-		{
-			sem_post(data->param->gard_end);
-			break ;
-		}
-		sem_post(data->param->gard_end);
-		usleep(80);
-	}
-	return ;
-}
-
-void	my_usleep_2(int time_to_sleep, t_data *data)
-{
-	int	start_time;
-
-	(void)data;
-	start_time = get_current_time();
-	while (1)
-	{
-		if (time_to_sleep <= (get_current_time() - start_time))
-			break ;
-		sem_wait(data->param->gard_sleep);
-		if (data->param->stop_sleeping != 0)
-		{
-			sem_post(data->param->gard_sleep);
-			break ;
-		}
-		sem_post(data->param->gard_sleep);
-		usleep(80);
-	}
-	return ;
-}
-
-void	print_status(char *message, t_data *d, int *s)
-{
-	int	time;
-
-	sem_wait(d->param->gard_end);
-	if (d->param->end_of_simulation != 0)
-	{
-		sem_post(d->param->gard_end);
-		*s = -1;
-		return ;
-	}
-	sem_post(d->param->gard_end);
-	time = get_current_time() - d->param->st_time;
-	printf("%d %d %s\n", time, d->id, message);
-	return ;
-}
-
-void	*controling(void *d)
-{
-	t_data	*data;
-	int		alive;
-	int		died;
-
-	data = (t_data *)d;
-	while (data->param->end_of_simulation == 0)
-	{
-		alive = get_current_time();
-		died = alive - data->param->st_time;
-		sem_wait(data->param->gard_alive);
-		if (data->param->die_time < alive - data->alive_time)
-		{
-			sem_post(data->param->gard_alive);
-			sem_wait(data->param->gard_end);
-			data->param->end_of_simulation = -1;
-			printf("%d %d died\n", died, data->id);
-			exit (1);
-		}
-		sem_post(data->param->gard_alive);
-		if (data->param->must_eat != -1 && data->stop == 0)
-		{
-			sem_wait(data->param->gard_n_eat);
-			if (data->n_eat  >= data->param->must_eat)
-			{
-				sem_post(data->param->gard_must);
-				data->stop = 1;
-			}
-			sem_post(data->param->gard_n_eat);
-		}
-	}
-	return (NULL);
-}
-
-void	start(t_data *data)
-{
-	int	s;
-
-	s = 0;
-	pthread_create(&data->control, NULL, controling, data);
-	pthread_detach(data->control);
-	while (1 && s == 0)
-	{
-		print_status("is thinking", data, &s);
-		sem_wait(data->param->sem);
-		print_status("has taken a fork", data, &s);
-		sem_wait(data->param->sem);
-		print_status("has taken a fork", data, &s);
-		print_status("is eating", data, &s);
-		sem_wait(data->param->gard_alive);
-		data->alive_time = get_current_time();
-		sem_post(data->param->gard_alive);
-		my_usleep(data->param->eat_time, data);
-		sem_post(data->param->sem);
-		sem_post(data->param->sem);
-		if (s == 0)
-		{
-			sem_wait(data->param->gard_n_eat);
-			data->n_eat++;
-			sem_post(data->param->gard_n_eat);
-		}
-		print_status("is sleeping", data, &s);
-		my_usleep(data->param->sleep_time, data);
-	}
-	exit (1);
-}
-
 
 void	*waiting(void *d)
 {
@@ -172,62 +29,37 @@ void	*waiting(void *d)
 	return (NULL);
 }
 
-
-int	mmain(int ac, char **av)
+void	start_simulation(t_data *data, t_param *param)
 {
-	t_param	*param;
-	t_data	*data;
-	pthread_t	wait_eat;
-	int		i;
+	int	i;
 
-	i = 1;
-	if (ac < 5 || ac > 6)
-		return (1);
-	while (i < ac)
-	{
-		if (check_error(av[i]) == 1)
-			return (print_help());
-		i++;
-	}
 	i = 0;
-	param = get_philo_param(ac, av);
-	if (param == NULL)
-	{
-		write(2, "sem_open failed\n", 16);
-		return (1);
-	}
-	data = ft_calloc(sizeof(t_data), param->n_philo);
-	data->param = param;
 	while (i < param->n_philo)
 	{
 		data[i].id = i + 1;
+		data[i].param = param;
+		data[i].n_eat = 0;
+		data[i].alive_time = get_current_time();
+		data[i].stop = 0;
+		if (param->must_eat != -1)
+			sem_wait(data[i].param->gard_must);
 		data[i].philo = fork();
 		if (data[i].philo == 0)
 		{
-			data[i].param = param;
-			data[i].n_eat = 0;
-			data[i].alive_time = get_current_time();
-			data[i].stop = 0;
-			if (param->must_eat != -1)
-				sem_wait(data[i].param->gard_must);
 			start(&data[i]);
 		}
 		i++;
 	}
-	i = 0;
-	if (param->must_eat != -1)
-	{
-		pthread_create(&wait_eat, NULL, waiting, data);
-		// pthread_detach(wait_eat); // remouved -----------------
-	}
-	waitpid(-1, NULL, 0);
-	
+	return ;
+}
+
+void	finish_simulation(t_data *data,
+	t_param *param, int i, pthread_t wait_eat)
+{
 	sem_wait(data->param->gard_sleep);
 	param->stop_sleeping = -1;
 	sem_post(data->param->gard_sleep);
 	usleep(50);
-
-	
 	while (i < param->n_philo)
 	{
 		if (param->must_eat != -1)
@@ -236,21 +68,66 @@ int	mmain(int ac, char **av)
 		i++;
 	}
 	if (param->must_eat != -1)
-		pthread_join(wait_eat, NULL); // add ---------
+		pthread_join(wait_eat, NULL);
 	sem_close(param->gard_alive);
 	sem_close(param->gard_n_eat);
 	sem_close(param->sem);
 	if (param->must_eat != -1)
+	{
 		sem_close(param->gard_must);
+		sem_close(param->gard_sleep);
+	}
 	sem_post(param->gard_end);
 	sem_close(param->gard_end);
-	free (param);
-	free (data);
+	return ;
+}
+
+int	check_error(int ac, char **av)
+{
+	int	i;
+
+	i = 1;
+	if (ac < 5 || ac > 6)
+	{
+		if (ac < 5)
+			write (2, "[!] Not enough arguments to start\n", 34);
+		else
+			write (2, "[!] to more arguments\n", 22);
+		return (1);
+	}
+	while (i < ac)
+	{
+		if (check_valide_data(av[i]) == 1)
+			return (print_help());
+		i++;
+	}
 	return (0);
 }
 
-int main(int ac, char **av)
+int	main(int ac, char **av)
 {
-	mmain(ac, av);
-	
+	t_param		*param;
+	t_data		*data;
+	pthread_t	wait_eat;
+
+	if (check_error(ac, av) != 0)
+		return (1);
+	param = get_philo_param(ac, av);
+	if (param == NULL)
+	{
+		write(2, "sem_open failed\n", 16);
+		return (1);
+	}
+	data = ft_calloc(sizeof(t_data), param->n_philo);
+	// data->param = param;
+	start_simulation(data, param);
+	if (param->must_eat != -1)
+		pthread_create(&wait_eat, NULL, waiting, data);
+	else
+		wait_eat = NULL;
+	waitpid(-1, NULL, 0);
+	finish_simulation(data, param, 0, wait_eat);
+	free (param);
+	free (data);
+	return (0);
 }
