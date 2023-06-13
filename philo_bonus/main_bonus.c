@@ -124,7 +124,7 @@ int	main(int ac, char **av)
 	if (param->must_eat != -1)
 		pthread_create(&wait_eat, NULL, waiting, data);
 	else
-		wait_eat = NULL;
+		wait_eat = (long unsigned int)NULL;
 	waitpid(-1, NULL, 0);
 	finish_simulation(data, param, 0, wait_eat);
 	unlink_sem();
