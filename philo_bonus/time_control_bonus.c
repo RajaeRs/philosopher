@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 00:37:32 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/12 18:31:47 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/12 23:59:44 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,10 @@
 int	get_current_time(void)
 {
 	struct timeval	tv;
-	struct timezone	tz;
 	int				time;
 
 	time = 0;
-	if (gettimeofday(&tv, &tz) != 0)
-		return (-1);
+	gettimeofday(&tv, NULL);
 	time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	return (time);
 }

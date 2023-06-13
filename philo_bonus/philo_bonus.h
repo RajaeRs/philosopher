@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:40:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/12 18:12:20 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/13 00:58:17 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,5 +61,7 @@ int			print_help(void);
 int			check_valide_data(char *data);
 t_param		*get_philo_param(int ac, char **av);
 void		start(t_data *data);
+void		unlink_sem(void);
+int			close_and_free(t_param *param, int i);
 
 #endif

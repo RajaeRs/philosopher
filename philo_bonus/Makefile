@@ -1,4 +1,4 @@
-SRC = main_bonus.c utils_bonus.c get_data_bonus.c starting_bonus.c time_control_bonus.c
+SRC = main_bonus.c utils_bonus.c get_data_bonus.c starting_bonus.c time_control_bonus.c clear_sem.c
 
 NAME = philo_bonus
 

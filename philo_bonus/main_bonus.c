@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/01 12:25:31 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/12 18:31:41 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/13 00:52:21 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,6 @@ int	main(int ac, char **av)
 		return (1);
 	}
 	data = ft_calloc(sizeof(t_data), param->n_philo);
-	// data->param = param;
 	start_simulation(data, param);
 	if (param->must_eat != -1)
 		pthread_create(&wait_eat, NULL, waiting, data);
@@ -128,6 +127,7 @@ int	main(int ac, char **av)
 		wait_eat = NULL;
 	waitpid(-1, NULL, 0);
 	finish_simulation(data, param, 0, wait_eat);
+	unlink_sem();
 	free (param);
 	free (data);
 	return (0);

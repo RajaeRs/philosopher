@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/04 16:58:03 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/12 18:31:23 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/13 00:58:05 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,35 +14,36 @@
 
 int	must_eat_sem(t_param *param)
 {
-	param->gard_must = sem_open("/must_eat", O_CREAT | O_EXCL, \
-			0644, param->n_philo);
 	sem_unlink("/must_eat");
-	param->gard_sleep = sem_open("/sleep", O_CREAT | O_EXCL, 0644, 1);
+	param->gard_must = sem_open("/must_eat", O_CREAT \
+		| O_EXCL, 0644, param->n_philo);
+	if (param->gard_must == SEM_FAILED)
+		return (close_and_free(param, 5));
 	sem_unlink("/sleep");
-	if (param->gard_must == SEM_FAILED || param->gard_sleep == SEM_FAILED)
-	{
-		free (param);
-		return (1);
-	}
+	param->gard_sleep = sem_open("/sleep", O_CREAT | O_EXCL, 0644, 1);
+	if (param->gard_sleep == SEM_FAILED)
+		return (close_and_free(param, 6));
 	return (0);
 }
 
 int	create_semaphor(t_param *param, int ac)
 {
-	param->gard_end = sem_open("/end", O_CREAT | O_EXCL, 0644, 1);
 	sem_unlink("/end");
-	param->gard_alive = sem_open("/alive", O_CREAT | O_EXCL, 0644, 1);
+	param->gard_end = sem_open("/end", O_CREAT | O_EXCL, 0644, 1);
+	if (param->gard_end == SEM_FAILED)
+		return (close_and_free(param, 1));
 	sem_unlink("/alive");
-	param->gard_n_eat = sem_open("/n_eat", O_CREAT | O_EXCL, 0644, 1);
+	param->gard_alive = sem_open("/alive", O_CREAT | O_EXCL, 0644, 1);
+	if (param->gard_alive == SEM_FAILED)
+		return (close_and_free(param, 2));
 	sem_unlink("/n_eat");
-	param->sem = sem_open("/forks", O_CREAT | O_EXCL, 0644, param->n_philo);
+	param->gard_n_eat = sem_open("/n_eat", O_CREAT | O_EXCL, 0644, 1);
+	if (param->gard_n_eat == SEM_FAILED)
+		return (close_and_free(param, 3));
 	sem_unlink("/forks");
-	if (param->sem == SEM_FAILED || param->gard_end == SEM_FAILED
-		|| param->gard_alive == SEM_FAILED || param->gard_n_eat == SEM_FAILED)
-	{
-		free (param);
-		return (1);
-	}
+	param->sem = sem_open("/forks", O_CREAT | O_EXCL, 0644, param->n_philo);
+	if (param->sem == SEM_FAILED)
+		return (close_and_free(param, 4));
 	if (ac == 6)
 		return (must_eat_sem(param));
 	return (0);
