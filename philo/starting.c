@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/31 21:43:45 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/01 12:15:26 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/17 16:00:51 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ void	print_status(char *message, t_data *d, int *s)
 int	taking_forks(t_data *d, int *s)
 {
 	print_status("is thinking", d, s);
+	if (d->id % 2 == 0)
+		usleep(100);
 	pthread_mutex_lock(&d->param->mutex[d->id - 1]);
 	print_status("has taken a fork", d, s);
 	if (d->param->n_philo == 1)
@@ -70,7 +72,6 @@ void	*start(void *data)
 		if (taking_forks(d, &s) != 0)
 			return (NULL);
 		print_status("is eating", d, &s);
-		add_n_eat(d, s);
 		pthread_mutex_lock(&d->param->gard_alive);
 		d->alive_time = get_current_time();
 		pthread_mutex_unlock(&d->param->gard_alive);
@@ -80,6 +81,7 @@ void	*start(void *data)
 			pthread_mutex_unlock(&d->param->mutex[0]);
 		else
 			pthread_mutex_unlock(&d->param->mutex[d->id]);
+		add_n_eat(d, s);
 		print_status("is sleeping", d, &s);
 		my_usleep(d->param->sleep_time, d);
 	}
@@ -108,7 +110,7 @@ void	start_simulation(t_data *data, t_param *param)
 		if (pthread_create(&data[i].philo, NULL, start, &data[i]) != 0)
 			write(2, "error\n", 6);
 		i++;
-		usleep(100);
+		usleep(5);
 	}
 	return ;
 }

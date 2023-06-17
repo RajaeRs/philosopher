@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/31 21:40:44 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/01 12:02:50 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/17 16:21:29 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,27 @@ int	n_philo_eating(t_data *data)
 	return (philo);
 }
 
+int	end(t_data *data)
+{
+	int		i;
+
+	i = 0;
+	pthread_mutex_lock(&data[i].param->gard_end);
+	if (data[i].param->end_of_simulation == -1)
+	{
+		pthread_mutex_unlock(&data[i].param->gard_end);
+		return (-1);
+	}
+	pthread_mutex_unlock(&data[i].param->gard_end);
+	return (0);
+}
+
 int	number_of_eat(t_data *data)
 {
 	int		i;
-	int		philo;
 
 	i = 0;
-	if (data[i].param->end_of_simulation == -1)
+	if (end(data) != 0)
 		return (-1);
 	while (i < data->param->n_philo)
 	{
@@ -45,9 +59,8 @@ int	number_of_eat(t_data *data)
 		pthread_mutex_unlock(&data->param->gard_n_eat);
 		i++;
 	}
-	philo = n_philo_eating(data);
 	i = 0;
-	if (philo == data->param->n_philo)
+	if (n_philo_eating(data) == data->param->n_philo)
 	{
 		pthread_mutex_lock(&data[i].param->gard_end);
 		data->param->end_of_simulation = -1;
@@ -59,25 +72,23 @@ int	number_of_eat(t_data *data)
 
 int	control_death(t_data	*data)
 {
-	int		alive;
 	int		i;
-	int		died;
 
 	i = 0;
-	if (data[i].param->end_of_simulation == -1)
+	if (end(data) != 0)
 		return (-1);
 	while (i < data->param->n_philo)
 	{
-		alive = get_current_time();
-		died = alive - data[i].param->st_time;
 		pthread_mutex_lock(&data->param->gard_alive);
-		if (data[i].param->die_time <= alive - data[i].alive_time)
+		if (data[i].param->die_time <= get_current_time() - data[i].alive_time)
 		{
 			pthread_mutex_unlock(&data->param->gard_alive);
 			pthread_mutex_lock(&data[i].param->gard_end);
 			data[i].param->end_of_simulation = -1;
 			pthread_mutex_unlock(&data[i].param->gard_end);
-			printf("%d %d died\n", died, data[i].id);
+			usleep(100);
+			printf("%d %d died\n", \
+				(get_current_time() - data[i].param->st_time), data[i].id);
 			return (-1);
 		}
 		pthread_mutex_unlock(&data->param->gard_alive);

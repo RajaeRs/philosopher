@@ -6,7 +6,7 @@
 /*   By: rrasezin <rrasezin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 00:18:22 by rrasezin          #+#    #+#             */
-/*   Updated: 2023/06/12 18:31:33 by rrasezin         ###   ########.fr       */
+/*   Updated: 2023/06/17 16:32:45 by rrasezin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ void	*controling(void *d)
 			sem_post(data->param->gard_alive);
 			sem_wait(data->param->gard_end);
 			data->param->end_of_simulation = -1;
+			usleep(100);
 			printf("%d %d died\n", died, data->id);
 			exit (1);
 		}
